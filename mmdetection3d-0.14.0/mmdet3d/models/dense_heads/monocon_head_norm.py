@@ -119,6 +119,7 @@ class MonoConHeadNorm(nn.Module):
                     normal_init(m, std=0.001)
 
     def forward(self, feats, img_metas):
+        #import ipdb; ipdb.set_trace()
         return multi_apply(self.forward_single, feats, img_metas)
 
     def forward_single(self, feat, img_metas):
@@ -137,30 +138,30 @@ class MonoConHeadNorm(nn.Module):
         depth_pred[:, 0, :, :] = 1. / (depth_pred[:, 0, :, :].sigmoid() + EPS) - 1
 
         # de normalize 
-        # cam2imgs = []
-        # bs = feat
-        # #print(img_metas)
-        # #print(bs.shape[0])
-        # for batch_id in range(bs.shape[0]):
-        #     #print(img_metas)
-        #     img_meta = img_metas[batch_id]
-        #     cam_p2 = img_meta['cam_intrinsic']
-        #     cam2imgs.append(cam_p2)
 
-        # N = depth_pred.shape[0]
-        # N_batch = cam2imgs.shape[0]
-        # batch_id = torch.arange(N_batch).unsqueeze(1)
-        # obj_id = batch_id.repeat(1, N // N_batch).flatten()
-        # if torch.onnx.is_in_onnx_export():
-        #     cam2imgs_inv = cam2imgs[obj_id]
-        # else:
-        #     cam2imgs_inv = cam2imgs.inverse()[obj_id]
-        # focal_length_inv = torch.stack(
-        #     [cam2imgs_inv[:, 0, 0], cam2imgs_inv[:, 1, 1]], dim=-1
-        # )
-        # pixel_size = torch.norm(focal_length_inv, dim=-1)
-        # depth_pred[:, 0, :, :] = depth_pred[:, 0, :, :] / (pixel_size * 500)
+        #import ipdb; ipdb.set_trace()
+        cam2imgs = []
+        for batch_id in range(len(img_metas)):
+            img_meta = img_metas[batch_id]
+            cam_p2 = img_meta['cam_intrinsic']
+            cam2imgs.append(cam_p2)
+        cam2imgs = torch.tensor(cam2imgs)
         
+        N_batch = cam2imgs.shape[0]
+        obj_id = torch.arange(N_batch)
+        if torch.onnx.is_in_onnx_export():
+            cam2imgs_inv = cam2imgs[obj_id]
+        else:
+            cam2imgs_inv = cam2imgs.inverse()[obj_id]
+
+        focal_length_inv = torch.stack(
+            [cam2imgs_inv[:, 0, 0], cam2imgs_inv[:, 1, 1]], dim=-1
+        )
+        pixel_size = torch.norm(focal_length_inv, dim=-1)
+        pixel_size = pixel_size.unsqueeze(1).unsqueeze(2).expand(pixel_size.shape[0], depth_pred.shape[2], depth_pred.shape[3]).to(torch.device('cuda:0'))
+        
+        depth_pred[:, 0, :, :] = depth_pred[:, 0, :, :] / (pixel_size * 500)
+                
 
         alpha_feat = self.dir_feat(feat)
         alpha_cls_pred = self.dir_cls(alpha_feat)
@@ -712,36 +713,37 @@ class MonoConHeadNorm(nn.Module):
                       proposal_cfg=None,
                       **kwargs):
         #print(img_metas)
-        outs = self(x, img_metas)
+        img_metas_ = [img_metas]
+        outs = self(x, img_metas_)
         
         # normalize depth
-        depth_pred = outs[9]
-        cam2imgs = []
+        # depth_pred = outs[9]
+        # cam2imgs = []
 
-        for batch_id in range(len(img_metas)):
-            img_meta = img_metas[batch_id]
-            cam_p2 = img_meta['cam_intrinsic']
-            cam2imgs.append(cam_p2)
-            
-        N = depth_pred[0].shape[0]
-        cam2imgs = torch.tensor(cam2imgs)
-        N_batch = cam2imgs.shape[0]
-        batch_id = torch.arange(N_batch).unsqueeze(1)
-        obj_id = batch_id.repeat(1, N // N_batch).flatten()
-        if torch.onnx.is_in_onnx_export():
-            cam2imgs_inv = cam2imgs[obj_id]
-        else:
-            cam2imgs_inv = cam2imgs.inverse()[obj_id]
-        focal_length_inv = torch.stack(
-            [cam2imgs_inv[:, 0, 0], cam2imgs_inv[:, 1, 1]], dim=-1
-        )
-        pixel_size = torch.norm(focal_length_inv, dim=-1)
-        pixel_size = pixel_size.unsqueeze(1).unsqueeze(2).expand(pixel_size.shape[0], depth_pred[0].shape[2], depth_pred[0].shape[3]) * 500
+        # for batch_id in range(len(img_metas)):
+        #     img_meta = img_metas[batch_id]
+        #     cam_p2 = img_meta['cam_intrinsic']
+        #     cam2imgs.append(cam_p2)
+
+        # N = depth_pred[0].shape[0]
+        # cam2imgs = torch.tensor(cam2imgs)
+        # N_batch = cam2imgs.shape[0]
+        # batch_id = torch.arange(N_batch).unsqueeze(1)
+        # obj_id = batch_id.repeat(1, N // N_batch).flatten()
+        # if torch.onnx.is_in_onnx_export():
+        #     cam2imgs_inv = cam2imgs[obj_id]
+        # else:
+        #     cam2imgs_inv = cam2imgs.inverse()[obj_id]
+        # focal_length_inv = torch.stack(
+        #     [cam2imgs_inv[:, 0, 0], cam2imgs_inv[:, 1, 1]], dim=-1
+        # )
+        # pixel_size = torch.norm(focal_length_inv, dim=-1)
+        # pixel_size = pixel_size.unsqueeze(1).unsqueeze(2).expand(pixel_size.shape[0], depth_pred[0].shape[2], depth_pred[0].shape[3]) * 500
         
-        depth_pred[0][:, 0, :, :] = depth_pred[0][:, 0, :, :].to(torch.device('cpu')) / pixel_size.to(torch.device('cpu'))
-        outs = list(outs)
-        outs[9] = depth_pred
-        outs = tuple(outs)
+        # depth_pred[0][:, 0, :, :] = depth_pred[0][:, 0, :, :].to(torch.device('cpu')) / pixel_size.to(torch.device('cpu'))
+        # outs = list(outs)
+        # outs[9] = depth_pred
+        # outs = tuple(outs)
 
 
         assert gt_labels is not None
