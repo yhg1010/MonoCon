@@ -50,7 +50,7 @@ class CenterNetMono3D(SingleStageDetector):
 
     def simple_test(self, img, img_metas, rescale=False):
         x = self.extract_feat(img)
-        outs = self.bbox_head(x)
+        outs = self.bbox_head(x, img_metas)
         bbox_outputs = self.bbox_head.get_bboxes(
             *outs, img_metas, rescale=rescale)
 
