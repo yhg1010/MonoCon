@@ -141,12 +141,15 @@ class MonoConHeadNorm(nn.Module):
 
         #import ipdb; ipdb.set_trace()
         cam2imgs = []
-        for batch_id in range(len(img_metas)):
-            img_meta = img_metas[batch_id]
-            cam_p2 = img_meta['cam_intrinsic']
-            cam2imgs.append(cam_p2)
+        if feat.shape[0] != 1:
+            for batch_id in range(len(img_metas)):
+                img_meta = img_metas[batch_id]
+                cam_p2 = img_meta['cam_intrinsic']
+                cam2imgs.append(cam_p2)
+        else:
+            cam2imgs.append(img_metas['cam_intrinsic'])
         cam2imgs = torch.tensor(cam2imgs)
-        
+
         N_batch = cam2imgs.shape[0]
         obj_id = torch.arange(N_batch)
         if torch.onnx.is_in_onnx_export():
