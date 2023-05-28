@@ -15,6 +15,8 @@ from .transforms_3d import (BackgroundPointsFilter, GlobalAlignment,
                             VoxelBasedPointSampler, RandomFlipMonoCon,
                             RandomShiftMonoCon)
 
+from .mono3d import *
+
 __all__ = [
     'ObjectSample', 'RandomFlip3D', 'ObjectNoise', 'GlobalRotScaleTrans',
     'PointShuffle', 'ObjectRangeFilter', 'PointsRangeFilter', 'Collect3D',

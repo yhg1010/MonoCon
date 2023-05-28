@@ -22,14 +22,18 @@ train_pipeline = [
         with_bbox_3d=True,
         with_label_3d=True,
         with_bbox_depth=True),
-    dict(
-        type='PhotoMetricDistortion',
-        brightness_delta=32,
-        contrast_range=(0.5, 1.5),
-        saturation_range=(0.5, 1.5),
-        hue_delta=18),
-    dict(type='RandomShiftMonoCon', shift_ratio=0.5, max_shift_px=32),
+    # dict(
+    #     type='PhotoMetricDistortion',
+    #     brightness_delta=32,
+    #     contrast_range=(0.5, 1.5),
+    #     saturation_range=(0.5, 1.5),
+    #     hue_delta=18),
+    dict(type="Mono3dVisTools", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/load'),
+
     dict(type='RandomFlipMonoCon', flip_ratio_bev_horizontal=0.5),
+    dict(type="Mono3dVisTools", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/flip'),
+    dict(type='RandomShiftMonoCon', shift_ratio=0.5, max_shift_px=32),
+    dict(type="Mono3dVisTools", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/shift'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     # Note: keys ['gt_kpts_2d', 'gt_kpts_valid_mask'] is hard coded in DefaultFormatBundle
@@ -106,4 +110,4 @@ data = dict(
         modality=input_modality,
         test_mode=True,
         box_type_3d='Camera'))
-evaluation = dict(interval=5)
+evaluation = dict(interval=10)

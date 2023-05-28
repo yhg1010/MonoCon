@@ -136,10 +136,6 @@ class MonoConHead(nn.Module):
         depth_pred = self.depth_head(feat)
         depth_pred[:, 0, :, :] = 1. / (depth_pred[:, 0, :, :].sigmoid() + EPS) - 1
 
-        # de normalize 
-        # depth_pred[0] dpeth [1] uncertainty 
-        # depth_pred[0] *(fx, fy) = 
-
         alpha_feat = self.dir_feat(feat)
         alpha_cls_pred = self.dir_cls(alpha_feat)
         alpha_offset_pred = self.dir_reg(alpha_feat)

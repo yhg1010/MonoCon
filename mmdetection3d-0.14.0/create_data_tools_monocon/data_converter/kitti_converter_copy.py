@@ -39,8 +39,7 @@ def convert_to_kitti_info_version2(info):
 def _read_imageset_file(path):
     with open(path, 'r') as f:
         lines = f.readlines()
-    #return [int(line) for line in lines]
-    return [line.replace('\n','') for line in lines]
+    return [int(line) for line in lines]
 
 
 def _calculate_num_points_in_gt(data_path,
@@ -115,7 +114,7 @@ def create_kitti_info_file(data_path,
         calib=True,
         image_ids=train_img_ids,
         relative_path=relative_path)
-    #_calculate_num_points_in_gt(data_path, kitti_infos_train, relative_path)
+    _calculate_num_points_in_gt(data_path, kitti_infos_train, relative_path)
     filename = save_path / f'{pkl_prefix}_infos_train.pkl'
     print(f'Kitti info train file is saved to {filename}')
     mmcv.dump(kitti_infos_train, filename)
@@ -126,25 +125,25 @@ def create_kitti_info_file(data_path,
         calib=True,
         image_ids=val_img_ids,
         relative_path=relative_path)
-    #_calculate_num_points_in_gt(data_path, kitti_infos_val, relative_path)
+    _calculate_num_points_in_gt(data_path, kitti_infos_val, relative_path)
     filename = save_path / f'{pkl_prefix}_infos_val.pkl'
     print(f'Kitti info val file is saved to {filename}')
     mmcv.dump(kitti_infos_val, filename)
-    # filename = save_path / f'{pkl_prefix}_infos_trainval.pkl'
-    # print(f'Kitti info trainval file is saved to {filename}')
-    # mmcv.dump(kitti_infos_train + kitti_infos_val, filename)
+    filename = save_path / f'{pkl_prefix}_infos_trainval.pkl'
+    print(f'Kitti info trainval file is saved to {filename}')
+    mmcv.dump(kitti_infos_train + kitti_infos_val, filename)
 
-    # kitti_infos_test = get_kitti_image_info(
-    #     data_path,
-    #     training=False,
-    #     label_info=False,
-    #     velodyne=True,
-    #     calib=True,
-    #     image_ids=test_img_ids,
-    #     relative_path=relative_path)
-    # filename = save_path / f'{pkl_prefix}_infos_test.pkl'
-    # print(f'Kitti info test file is saved to {filename}')
-    # mmcv.dump(kitti_infos_test, filename)
+    kitti_infos_test = get_kitti_image_info(
+        data_path,
+        training=False,
+        label_info=False,
+        velodyne=True,
+        calib=True,
+        image_ids=test_img_ids,
+        relative_path=relative_path)
+    filename = save_path / f'{pkl_prefix}_infos_test.pkl'
+    print(f'Kitti info test file is saved to {filename}')
+    mmcv.dump(kitti_infos_test, filename)
 
 
 def create_waymo_info_file(data_path,
@@ -348,7 +347,6 @@ def export_2d_annotation(root_path, info_path, mono3d=True):
     from os import path as osp
     for info in mmcv.track_iter_progress(kitti_infos):
         coco_infos = get_2d_boxes(info, occluded=[0, 1, 2, 3], mono3d=mono3d)
-        #import ipdb; ipdb.set_trace()
         (height, width,
          _) = mmcv.imread(osp.join(root_path,
                                    info['image']['image_path'])).shape

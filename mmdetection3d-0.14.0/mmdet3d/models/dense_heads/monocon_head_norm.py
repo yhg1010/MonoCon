@@ -25,7 +25,7 @@ class MonoConHeadNorm(nn.Module):
                  bbox3d_code_size=7,
                  num_kpt=9,
                  num_alpha_bins=12,
-                 max_objs=30,
+                 max_objs=100,
                  vector_regression_level=1,
                  pred_bbox2d=True,
                  loss_center_heatmap=None,
@@ -161,7 +161,7 @@ class MonoConHeadNorm(nn.Module):
             [cam2imgs_inv[:, 0, 0], cam2imgs_inv[:, 1, 1]], dim=-1
         )
         pixel_size = torch.norm(focal_length_inv, dim=-1)
-        pixel_size = pixel_size.unsqueeze(1).unsqueeze(2).expand(pixel_size.shape[0], depth_pred.shape[2], depth_pred.shape[3]).to(torch.device('cuda:0'))
+        pixel_size = pixel_size.unsqueeze(1).unsqueeze(2).expand(pixel_size.shape[0], depth_pred.shape[2], depth_pred.shape[3]).to(torch.device(depth_pred.device))
         
         depth_pred[:, 0, :, :] = depth_pred[:, 0, :, :] / (pixel_size * 500)
                 
@@ -388,7 +388,7 @@ class MonoConHeadNorm(nn.Module):
             gt_kpt_2d = gt_kpt_2d.reshape(-1, self.num_kpt, 2)
             gt_kpt_2d[:, :, 0] *= width_ratio
             gt_kpt_2d[:, :, 1] *= height_ratio
-
+            #import ipdb; ipdb.set_trace()
             for j, ct in enumerate(gt_centers):
                 ctx_int, cty_int = ct.int()
                 ctx, cty = ct
@@ -406,7 +406,7 @@ class MonoConHeadNorm(nn.Module):
                 ind = gt_label[j]
                 gen_gaussian_target(center_heatmap_target[batch_id, ind],
                                     [ctx_int, cty_int], radius)
-
+                #import ipdb; ipdb.set_trace()
                 indices[batch_id, j] = cty_int * feat_w + ctx_int
 
                 wh_target[batch_id, j, 0] = scale_box_w

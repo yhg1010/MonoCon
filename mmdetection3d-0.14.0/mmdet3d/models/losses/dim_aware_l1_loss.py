@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from mmdet.models.builder import LOSSES
 
+EPS = 1e-6
 
 @LOSSES.register_module()
 class DimAwareL1Loss(nn.Module):
@@ -26,7 +27,9 @@ class DimAwareL1Loss(nn.Module):
         dimension = dimension.clone().detach()
 
         loss = torch.abs(input - target)
-        loss /= dimension
+        
+        loss /= (dimension + EPS)
+        # eps 1e-6 clamp(1e-4....)
 
         with torch.no_grad():
             compensation_weight = F.l1_loss(input, target) / loss.mean()

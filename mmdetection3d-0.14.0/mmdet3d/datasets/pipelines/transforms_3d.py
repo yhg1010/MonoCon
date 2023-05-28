@@ -1383,13 +1383,17 @@ class RandomFlipMonoCon(RandomFlip):
                 updated in the result dict.
         """
         assert direction in ['horizontal']
-
-        w = input_dict['img_shape'][1]
-        cam = np.array(input_dict['cam_intrinsic'])
-        cam[0, 2] = w - cam[0, 2] - 1
-        cam[0, 3] = - cam[0, 3]
-        input_dict['cam_intrinsic'] = cam
-
+        #assert 0
+        #w = input_dict['img_shape'][1]
+        #cam = np.array(input_dict['cam_intrinsic'])
+        # cam[0, 2] = w - cam[0, 2] - 1 
+        # cam[0, 3] = - cam[0, 3]
+        #cam[0, 2] = w - cam[0, 2]
+        #input_dict['cam_intrinsic'] = cam
+        #import ipdb; ipdb.set_trace()
+        if 'bbox3d_fields' not in input_dict:
+            input_dict['points'].flip(direction)
+            return
         if len(input_dict['bbox3d_fields']) == 0:  # test mode
             input_dict['bbox3d_fields'].append('empty_box3d')
             input_dict['empty_box3d'] = input_dict['box_type_3d'](
@@ -1398,16 +1402,24 @@ class RandomFlipMonoCon(RandomFlip):
             if 'points' in input_dict:
                 input_dict['points'] = input_dict[key].flip(
                     direction, points=input_dict['points'])
-            if 'gt_bboxes_3d' in input_dict:
-                box_3d = input_dict['gt_bboxes_3d']
-                box_3d.flip(direction)
-                input_dict[key] = box_3d
+            #if 'gt_bboxes_3d' in input_dict:
+            else: 
+                #box_3d = input_dict['gt_bboxes_3d']
+                #box_3d.flip(direction)
+                #input_dict[key] = box_3d
+                input_dict[key].flip(direction)
 
         if 'centers2d' in input_dict:
             assert self.sync_2d is True and direction == 'horizontal', \
                 'Only support sync_2d=True and horizontal flip with images'
-            w = input_dict['img_shape'][1]
-            input_dict['centers2d'][..., 0] = w - input_dict['centers2d'][..., 0] - 1
+            w = input_dict['ori_shape'][1]
+            input_dict['centers2d'][..., 0] = w - input_dict['centers2d'][..., 0]
+
+            cam = np.array(input_dict['cam_intrinsic'])
+            cam[0, 2] = w - cam[0, 2] 
+            input_dict['cam_intrinsic'] = cam
+
+
 
         if 'gt_kpts_2d' in input_dict:
             w = input_dict['img_shape'][1]

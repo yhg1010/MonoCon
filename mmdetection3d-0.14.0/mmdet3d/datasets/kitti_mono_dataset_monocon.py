@@ -82,10 +82,6 @@ class KittiMonoDatasetMonoCon(KittiMonoDataset):
                 gt_bboxes_ignore.append(bbox)
                 continue
 
-            # if ann.get('iscrowd', False):
-            #     gt_bboxes_ignore.append(bbox)
-            #     continue
-
             gt_bboxes.append(bbox)
             gt_labels.append(self.cat2label[ann['category_id']])
             gt_masks_ann.append(ann.get('segmentation', None))

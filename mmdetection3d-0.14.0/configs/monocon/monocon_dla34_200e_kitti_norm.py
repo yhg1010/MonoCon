@@ -1,6 +1,6 @@
 _base_ = [
-    '../_base_/models/monocon_dla34.py',
-    '../_base_/datasets/small-mono3d-3class-monocon.py',
+    '../_base_/models/monocon_dla34_norm.py',
+    '../_base_/datasets/kitti-mono3d-3class-monocon.py',
     '../_base_/schedules/cyclic_200e_monocon.py',
     '../_base_/default_runtime.py'
 ]

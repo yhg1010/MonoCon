@@ -4,7 +4,7 @@ import numba
 import numpy as np
 
 
-#@numba.jit
+@numba.jit
 def get_thresholds(scores: np.ndarray, num_gt, num_sample_pts=41):
     scores.sort()
     scores = scores[::-1]
@@ -80,7 +80,7 @@ def clean_data(gt_anno, dt_anno, current_class, difficulty):
     return num_valid_gt, ignored_gt, ignored_dt, dc_bboxes
 
 
-#@numba.jit(nopython=True)
+@numba.jit(nopython=True)
 def image_box_overlap(boxes, query_boxes, criterion=-1):
     N = boxes.shape[0]
     K = query_boxes.shape[0]
@@ -118,13 +118,13 @@ def bev_box_overlap(boxes, qboxes, criterion=-1):
     return riou
 
 
-#@numba.jit(nopython=True, parallel=True)
+@numba.jit(nopython=True, parallel=True)
 def d3_box_overlap_kernel(boxes, qboxes, rinc, criterion=-1):
     # ONLY support overlap in CAMERA, not lidar.
     # TODO: change to use prange for parallel mode, should check the difference
     N, K = boxes.shape[0], qboxes.shape[0]
-    for i in range(N):
-        for j in range(K):
+    for i in numba.prange(N):
+        for j in numba.prange(K):
             if rinc[i, j] > 0:
                 # iw = (min(boxes[i, 1] + boxes[i, 4], qboxes[j, 1] +
                 #         qboxes[j, 4]) - max(boxes[i, 1], qboxes[j, 1]))
@@ -158,7 +158,7 @@ def d3_box_overlap(boxes, qboxes, criterion=-1):
     return rinc
 
 
-#@numba.jit(nopython=True)
+@numba.jit(nopython=True)
 def compute_statistics_jit(overlaps,
                            gt_datas,
                            dt_datas,
@@ -288,7 +288,7 @@ def get_split_parts(num, num_part):
         return [same_part] * num_part + [remain_num]
 
 
-#@numba.jit(nopython=True)
+@numba.jit(nopython=True)
 def fused_compute_statistics(overlaps,
                              pr,
                              gt_nums,
@@ -362,7 +362,6 @@ def calculate_iou_partly(gt_annos, dt_annos, metric, num_parts=50):
         if metric == 0:
             gt_boxes = np.concatenate([a['bbox'] for a in gt_annos_part], 0)
             dt_boxes = np.concatenate([a['bbox'] for a in dt_annos_part], 0)
-            #import pdb; pdb.set_trace(); 
             overlap_part = image_box_overlap(gt_boxes, dt_boxes)
         elif metric == 1:
             loc = np.concatenate(
