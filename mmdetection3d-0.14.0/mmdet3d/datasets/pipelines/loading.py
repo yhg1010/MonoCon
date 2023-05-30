@@ -688,5 +688,5 @@ class LoadAnnotations3DMonoCon(LoadAnnotations3D):
         results = super().__call__(results)
         if self.with_2D_kpts:
             results = self._load_kpts_2d(results)
-
+        
         return results

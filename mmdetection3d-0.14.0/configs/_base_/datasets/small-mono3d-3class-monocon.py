@@ -22,9 +22,9 @@ train_pipeline = [
         with_bbox_3d=True,
         with_label_3d=True,
         with_bbox_depth=True),
-    dict(type="Mono3dVisTools", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/load'),
+    dict(type="Mono3dVisTools", stage="load", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/load'),
     dict(type='RandomFlipMonoCon', flip_ratio_bev_horizontal=0.5),
-    dict(type="Mono3dVisTools", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/flip'),
+    dict(type="Mono3dVisTools",stage="flip", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/flip'),
     # dict(
     #     type='PhotoMetricDistortion',
     #     brightness_delta=32,
@@ -32,12 +32,12 @@ train_pipeline = [
     #     saturation_range=(0.5, 1.5),
     #     hue_delta=18),
     dict(type='RandomShiftMonoCon', shift_ratio=0.5, max_shift_px=32),
-    dict(type="Mono3dVisTools", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/shift'),
+    dict(type="Mono3dVisTools", stage="shift", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/shift'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     # Note: keys ['gt_kpts_2d', 'gt_kpts_valid_mask'] is hard coded in DefaultFormatBundle
     dict(type='DefaultFormatBundle3D', class_names=class_names),
-    dict(type="Mono3dVisTools", debug_mode=True, after_bundle=True, save_prefix='/root/code/vis/bundle'),
+    dict(type="Mono3dVisTools",stage="bundle", debug_mode=True, after_bundle=True, save_prefix='/root/code/vis/bundle'),
     dict(
         type='Collect3D',
         keys=[
@@ -55,6 +55,7 @@ train_pipeline = [
 ]
 test_pipeline = [
     dict(type='LoadImageFromFileMono3D'),
+    dict(type="Mono3dVisTools",stage="flip", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/load'),
     dict(
         type='MultiScaleFlipAugMonoCon',
         scale_factor=1.0,
@@ -68,7 +69,8 @@ test_pipeline = [
                 class_names=class_names,
                 with_label=False),
             dict(type='Collect3D', keys=['img']),
-        ])
+        ]),
+    dict(type="Mono3dVisTools",stage="flip", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/flip'),
 ]
 data = dict(
     samples_per_gpu=30,

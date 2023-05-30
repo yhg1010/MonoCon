@@ -80,5 +80,34 @@ class CenterNetMono3D(SingleStageDetector):
     def aug_test(self, imgs, img_metas, rescale=True):
         raise NotImplementedError
 
-    def show_results(self, data, result, out_dir):
-        raise NotImplementedError
+    def show_results(self, data, result, out_dir, show=False):
+        for batch_id in range(len(result)):
+            if isinstance(data['img_metas'][0], DC):
+                img_filename = data['img_metas'][0]._data[0][batch_id][
+                    'filename']
+                #import ipdb; ipdb.set_trace()
+                cam2img = data['img_metas'][0]._data[0][batch_id]['cam_intrinsic']
+            elif mmcv.is_list_of(data['img_metas'][0], dict):
+                img_filename = data['img_metas'][0][batch_id]['filename']
+                cam2img = data['img_metas'][0][batch_id]['cam2img']
+            else:
+                ValueError(
+                    f"Unsupported data type {type(data['img_metas'][0])} "
+                    f'for visualization!')
+            img = mmcv.imread(img_filename)
+            file_name = osp.split(img_filename)[-1].split('.')[0]
+
+            assert out_dir is not None, 'Expect out_dir, got none.'
+
+            pred_bboxes = result[batch_id]['img_bbox']['boxes_3d']
+            assert isinstance(pred_bboxes, CameraInstance3DBoxes), \
+                f'unsupported predicted bbox type {type(pred_bboxes)}'
+
+            show_multi_modality_result(img,
+                                       None,
+                                       pred_bboxes,
+                                       cam2img,
+                                       out_dir,
+                                       file_name,
+                                       'camera',
+                                       show=show)    

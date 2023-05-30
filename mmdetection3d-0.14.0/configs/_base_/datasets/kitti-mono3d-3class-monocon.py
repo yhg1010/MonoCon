@@ -28,12 +28,12 @@ train_pipeline = [
     #     contrast_range=(0.5, 1.5),
     #     saturation_range=(0.5, 1.5),
     #     hue_delta=18),
-    dict(type="Mono3dVisTools", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/load'),
+    dict(type="Mono3dVisTools", stage='load', debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/load'),
 
     dict(type='RandomFlipMonoCon', flip_ratio_bev_horizontal=0.5),
-    dict(type="Mono3dVisTools", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/flip'),
+    dict(type="Mono3dVisTools", stage='flip', debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/flip'),
     dict(type='RandomShiftMonoCon', shift_ratio=0.5, max_shift_px=32),
-    dict(type="Mono3dVisTools", debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/shift'),
+    dict(type="Mono3dVisTools", stage='shift' , debug_mode=True, after_bundle=False, save_prefix='/root/code/vis/shift'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     # Note: keys ['gt_kpts_2d', 'gt_kpts_valid_mask'] is hard coded in DefaultFormatBundle
@@ -72,7 +72,7 @@ test_pipeline = [
 ]
 data = dict(
     samples_per_gpu=8,
-    workers_per_gpu=4,
+    workers_per_gpu=0,
     train=dict(
         type=dataset_type,
         data_root=data_root,

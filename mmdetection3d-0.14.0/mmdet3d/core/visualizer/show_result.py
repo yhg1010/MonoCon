@@ -266,4 +266,5 @@ def show_multi_modality_result(img,
     if pred_bboxes is not None:
         pred_img = draw_bbox(
             pred_bboxes, img, proj_mat, img_metas, color=pred_bbox_color)
-        mmcv.imwrite(pred_img, osp.join(result_path, f'{filename}_pred.png'))
+        if pred_img != None:
+            mmcv.imwrite(pred_img, osp.join(result_path, f'{filename}_pred.png'))

@@ -1391,6 +1391,15 @@ class RandomFlipMonoCon(RandomFlip):
         #cam[0, 2] = w - cam[0, 2]
         #input_dict['cam_intrinsic'] = cam
         #import ipdb; ipdb.set_trace()
+        # cam = np.array(input_dict['cam_intrinsic'])
+        # cam[0, 2] = w - cam[0, 2] 
+        # input_dict['cam_intrinsic'] = cam
+        input_dict['cam_intrinsic'] = np.array(input_dict['cam_intrinsic'])
+        #print(input_dict['img_shape'])
+        #print("before flip: ", input_dict['cam_intrinsic'])
+        input_dict['cam_intrinsic'][0, 2] = input_dict['img_shape'][1] - input_dict['cam_intrinsic'][0, 2]
+        #print("after flip: ", input_dict['cam_intrinsic'])
+        #print("image info: ", )
         if 'bbox3d_fields' not in input_dict:
             input_dict['points'].flip(direction)
             return
@@ -1408,6 +1417,7 @@ class RandomFlipMonoCon(RandomFlip):
                 #box_3d.flip(direction)
                 #input_dict[key] = box_3d
                 input_dict[key].flip(direction)
+        #import ipdb; ipdb.set_trace()
 
         if 'centers2d' in input_dict:
             assert self.sync_2d is True and direction == 'horizontal', \
@@ -1415,9 +1425,7 @@ class RandomFlipMonoCon(RandomFlip):
             w = input_dict['ori_shape'][1]
             input_dict['centers2d'][..., 0] = w - input_dict['centers2d'][..., 0]
 
-            cam = np.array(input_dict['cam_intrinsic'])
-            cam[0, 2] = w - cam[0, 2] 
-            input_dict['cam_intrinsic'] = cam
+            
 
 
 
@@ -1467,7 +1475,8 @@ class RandomFlipMonoCon(RandomFlip):
         if input_dict['pcd_horizontal_flip']:
             self.random_flip_data_3d(input_dict, 'horizontal')
             input_dict['transformation_3d_flow'].extend(['HF'])
-
+        #print("after flip: ", input_dict['cam_intrinsic'])
+        #import ipdb; ipdb.set_trace()
         return input_dict
 
     def __repr__(self):

@@ -76,9 +76,12 @@ class KittiMonoDatasetMonoCon(KittiMonoDataset):
             bbox = [x1, y1, x2, y2]
             bbox_cam3d = np.array(ann['bbox_cam3d']).reshape(-1, )
 
-            if ann.get('iscrowd', False) or ann['occluded'] > self.max_occlusion \
-                    or ann['truncated'] > self.max_truncation or ann['center2d'][2] > self.max_depth or \
-                    ann['center2d'][2] < self.min_depth or (y2 - y1) < self.min_height:
+            # if ann.get('iscrowd', False) or ann['occluded'] > self.max_occlusion \
+            #         or ann['truncated'] > self.max_truncation or ann['center2d'][2] > self.max_depth or \
+            #         ann['center2d'][2] < self.min_depth or (y2 - y1) < self.min_height:
+            #     gt_bboxes_ignore.append(bbox)
+            #     continue
+            if (x2 - x1) < 20 or (y2 - y1) < 20 :
                 gt_bboxes_ignore.append(bbox)
                 continue
 
@@ -127,6 +130,12 @@ class KittiMonoDatasetMonoCon(KittiMonoDataset):
             gt_bboxes_cam3d,
             box_dim=gt_bboxes_cam3d.shape[-1],
             origin=(0.5, 0.5, 0.5))
+        #import ipdb; ipdb.set_trace()
+        #print("img_info: ", img_info['filename'])
+        #print("cam_intrinsic: ", img_info['cam_intrinsic'])
+        #print("cam_intrinsic_p0: ", img_info['cam_intrinsic_p0'])
+        #print("gt_bboxes_cam3d: ", gt_bboxes_cam3d)
+        
         gt_labels_3d = copy.deepcopy(gt_labels)
 
         if gt_bboxes_ignore:

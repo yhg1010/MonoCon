@@ -35,7 +35,7 @@ class Mono3dVisTools(object):
     results = mono3d_vis(results)
     """
 
-    def __init__(self, debug_mode=False, after_bundle=True, save_prefix=None):
+    def __init__(self, stage, debug_mode=False, after_bundle=True, save_prefix=None):
         self.debug_mode = debug_mode
         MEAN = torch.tensor([123.675, 116.28, 103.53])
         STD = torch.tensor([58.395, 57.12, 57.375])
@@ -43,6 +43,7 @@ class Mono3dVisTools(object):
         self.std = STD.view(3, 1, 1)
         self.after_bundle = after_bundle
         self.save_prefix = save_prefix
+        self.stage = stage
 
     def __call__(self, result):
         if not self.debug_mode:
@@ -56,15 +57,20 @@ class Mono3dVisTools(object):
             gt_bboxes = result["gt_bboxes"].data.cpu().numpy()
             gt_bboxes_3d = result["gt_bboxes_3d"].data
         else:
+            #import ipdb; ipdb.set_trace()
+            #try:
             single_image = result["img"][..., ::-1].copy()
             gt_bboxes = result["gt_bboxes"]
             gt_bboxes_3d = result["gt_bboxes_3d"]
+            # except:
+            #     return result
 
         for bbox in gt_bboxes:
             single_image = draw_bbox(single_image, bbox)
         #import ipdb; ipdb.set_trace()
         
-        cam_intrinsic = torch.tensor(result["img_info"]["cam_intrinsic"])
+        cam_intrinsic = torch.tensor(result["cam_intrinsic"])
+        
         try:
             single_corners_2d = get_corners_2d(gt_bboxes_3d, cam_intrinsic)
         except:
@@ -78,7 +84,12 @@ class Mono3dVisTools(object):
                 idx,
                 show_corner=False,
             )
+        #import ipdb; ipdb.set_trace()
+        print("stage: ", self.stage)
         print("result['img_info']['filename']", result["img_info"]["filename"])
+        print("cam_intrinsic: ", cam_intrinsic)
+        print("camerainstance: ", gt_bboxes_3d)
+        #cam_intrinsic[0, 2] = result["img"].shape[1] - cam_intrinsic[0, 2]
         if self.save_prefix is None:
             show_image(single_image, figsize=(10.24 * 2, 5.12 * 2))
         else:
