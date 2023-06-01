@@ -42,7 +42,8 @@ def single_gpu_test(model,
             # 'show_results' is MMdetection3D visualization API
             models_3d = (Base3DDetector, Base3DSegmentor,
                          SingleStageMono3DDetector)
-            if isinstance(model.module, models_3d):
+            # if isinstance(model.module, models_3d):
+            if True:
                 model.module.show_results(data, result, out_dir)
             # Visualize the results of MMDetection model
             # 'show_result' is MMdetection visualization API
@@ -65,7 +66,8 @@ def single_gpu_test(model,
                     img_show = mmcv.imresize(img_show, (ori_w, ori_h))
 
                     if out_dir:
-                        out_file = osp.join(out_dir, img_meta['ori_filename'])
+                        import ipdb; ipdb.set_trace()
+                        out_file = osp.join(out_dir, img_meta['filename'])
                     else:
                         out_file = None
 
